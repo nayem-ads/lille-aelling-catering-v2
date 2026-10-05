@@ -1,0 +1,46 @@
+{
+  "phone": "+4791586115",
+  "phoneDisplay": "915 86 115",
+  "email": "post@lilleelling.no",
+  "address": "Losjeplassen 2, 3015 Drammen",
+  "shopUrl": "https://lilleelling.no/collections/catering",
+  "privacyUrl": "https://lilleelling.no/policies/privacy-policy",
+  "deliveryRadiusKm": 40,
+
+  "google": { "rating": null, "count": null, "url": null },
+  "reviews": [],
+  "responseText": null,
+
+  "unitOverrides": {
+    "3-snitter": "pakke",
+    "4-snitter": "pakke",
+    "5-snitter": "pakke",
+    "tapas-copy": "person",
+    "motemeny-2": "person",
+    "motemeny-3": "person",
+    "koldtbord": "person"
+  },
+
+  "collectionLabels": {
+    "motepakker": "Møtepakker",
+    "lunsjtallerken": "Lunsjtallerken",
+    "pasmurt-og-salater-1": "Påsmurt og wraps",
+    "tartor-cakes": "Kaker",
+    "desserter": "Dessert og kakestykker",
+    "varm-drikke-catering": "Varm drikke",
+    "mineralvann-mineral-water": "Kald drikke",
+    "tilllegg": "Tillegg"
+  },
+
+  "categories": [
+    { "id": "populare", "label": "Populære", "image": "https://lilleelling.no/cdn/shop/files/ja.png", "handles": ["tradisjonell-julebuffet", "koldtbord", "5-snitter", "tapas", "motemeny-2"] },
+    { "id": "julemeny", "label": "Julemeny", "collections": ["julemeny11"] },
+    { "id": "motemat", "label": "Møtemat", "collections": ["motepakker", "lunsjtallerken", "pasmurt-og-salater-1"] },
+    { "id": "snitter", "label": "Snitter", "collections": ["snitter"] },
+    { "id": "koldtbord", "label": "Koldtbord", "collections": ["koldtbord"] },
+    { "id": "tapas", "label": "Tapas", "collections": ["tapas-buffet"] },
+    { "id": "varmretter", "label": "Varmretter", "collections": ["varmretter"] },
+    { "id": "kaker", "label": "Kaker", "collections": ["tartor-cakes", "desserter"] },
+    { "id": "drikke", "label": "Drikke", "collections": ["varm-drikke-catering", "mineralvann-mineral-water", "tilllegg"] }
+  ]
+}

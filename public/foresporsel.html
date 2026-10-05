@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dato og levering | Lille Ælling catering</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="https://lilleelling.no/cdn/shop/files/header_logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<script src="/config.js"></script>
+</head>
+<body data-page="request" class="req">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<header class="hdr">
+  <div class="wrap hdr__in">
+    <a class="hdr__logo" href="/" aria-label="Lille Ælling, til forsiden"><img src="https://lilleelling.no/cdn/shop/files/header_logo.png" alt="Lille Ælling" width="146" height="35"></a>
+    <span class="hdr__step">Steg 2 av 2: Dato og levering</span>
+    <a class="link" href="/#menyer" style="display:inline-flex;align-items:center;gap:4px"><svg class="icon"><use href="#i-back"/></svg>Tilbake<span class="hide-sm">&nbsp;til menyene</span></a>
+  </div>
+</header>
+
+<details class="sumbar" id="sumbar">
+  <summary><span><span class="title" style="font-size:16px;font-weight:500">Din forespørsel</span><br><span class="small muted" id="sumbarLine"></span></span><span style="display:inline-flex;align-items:center;gap:4px" class="small"><span>Vis</span><svg class="icon chev"><use href="#i-down"/></svg></span></summary>
+  <div class="sumbar__body" id="sumbarBody"></div>
+</details>
+
+<main class="wrap req__cols">
+  <div class="formcard">
+    <h1 class="h2">Når og hvor skal maten serveres?</h1>
+    <div id="emptyNote" class="alert alert--info" style="margin-top:16px" hidden>Du har ikke valgt noen menyer ennå. <a href="/#menyer">Velg menyer</a>, eller beskriv hva du ønsker nederst i skjemaet.</div>
+    <form id="reqForm" novalidate>
+      <fieldset class="fgroup">
+        <legend>Dato og tid</legend>
+        <div class="frow">
+          <div class="field" data-f="date"><label for="date">Dato</label><input id="date" name="date" type="date" required><p class="help">Vi trenger vanligvis 2–4 dager.</p><p class="err" id="date-err" role="alert"></p></div>
+          <div class="field" data-f="time"><label for="time">Serveringstid</label><input id="time" name="time" type="time" step="900" required><p class="err" id="time-err" role="alert"></p></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fgroup">
+        <legend>Levering</legend>
+        <div class="seg" role="radiogroup" aria-label="Levering eller henting">
+          <input type="radio" id="f-lev" name="fulfil" value="levering" checked><label for="f-lev">Levering til adresse</label>
+          <input type="radio" id="f-hent" name="fulfil" value="henting"><label for="f-hent">Henting på Losjeplassen 2</label>
+        </div>
+        <div class="frow frow--addr" id="addrRow">
+          <div class="field" data-f="address"><label for="address">Leveringsadresse</label><input id="address" name="address" autocomplete="street-address" required><p class="err" id="address-err" role="alert"></p></div>
+          <div class="field" data-f="postcode"><label for="postcode">Postnummer</label><input id="postcode" name="postcode" inputmode="numeric" autocomplete="postal-code" maxlength="4" pattern="\d{4}" required><p class="err" id="postcode-err" role="alert"></p></div>
+        </div>
+        <p class="small muted" id="addrHelp">Vi leverer innen 40 km fra Drammen.</p>
+      </fieldset>
+
+      <fieldset class="fgroup">
+        <legend>Kontaktinfo</legend>
+        <div class="frow frow--stack">
+          <div class="field" data-f="name"><label for="name">Fullt navn</label><input id="name" name="name" autocomplete="name" required><p class="err" id="name-err" role="alert"></p></div>
+          <div class="field" data-f="phone"><label for="phone">Telefon</label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required><p class="err" id="phone-err" role="alert"></p></div>
+        </div>
+        <div class="frow frow--stack">
+          <div class="field" data-f="email"><label for="email">E-post</label><input id="email" name="email" type="email" autocomplete="email" required><p class="err" id="email-err" role="alert"></p></div>
+          <div class="field" data-f="company"><label for="company">Firma <span class="opt">(valgfritt)</span></label><input id="company" name="company" autocomplete="organization"></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="fgroup">
+        <legend>Allergier og ønsker</legend>
+        <div class="field" data-f="message"><label for="message">Allergier, kosthold eller andre ønsker <span class="opt" id="msgOpt">(valgfritt)</span></label><textarea id="message" name="message" maxlength="2000" placeholder="F.eks. 3 glutenfrie, 2 vegetarianere."></textarea><p class="err" id="message-err" role="alert"></p></div>
+      </fieldset>
+
+      <div class="hp" aria-hidden="true"><label for="website">Nettside</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+
+      <div style="margin-top:32px;display:grid;gap:12px">
+        <div class="alert alert--error" id="formError" role="alert" hidden></div>
+        <button class="btn btn--primary btn--block" type="submit" id="submitBtn">Send forespørsel</button>
+        <p class="small muted">Vi ringer deg for å bekrefte meny, pris og levering. Ingen betaling nå. Les hvordan vi behandler <a href="https://lilleelling.no/policies/privacy-policy">personopplysninger</a>.</p>
+      </div>
+    </form>
+  </div>
+  <aside class="summary" id="summary" aria-label="Din forespørsel"></aside>
+</main>
+
+<div class="consent" id="consent" role="dialog" aria-label="Informasjonskapsler" hidden>
+  <p class="small">Vi bruker informasjonskapsler for å måle hvordan siden brukes og for å vise relevante annonser. Du velger selv.</p>
+  <div class="consent__act"><button class="btn btn--primary" type="button" data-consent="granted">Godta</button><button class="btn btn--secondary" type="button" data-consent="denied">Bare nødvendige</button></div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

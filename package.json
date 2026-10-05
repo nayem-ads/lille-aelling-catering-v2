@@ -1,0 +1,21 @@
+{
+  "name": "lille-aelling-catering",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Lille Ælling catering request page (book.lilleelling.no)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.14"
+  },
+  "devDependencies": {
+    "smtp-server": "^3.19.17"
+  }
+}
