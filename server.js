@@ -310,7 +310,7 @@ app.post('/api/quote', async (req, res) => {
 app.get('/healthz', (req, res) => res.json({ ok: true, smtp: SMTP_ON, webhook: WEBHOOK_ON, dryRun: DRY_RUN, menu: menuCache ? menuCache.data.source : 'not-loaded' }));
 
 /* ---------------- static ---------------- */
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '1h', setHeaders(res, p) { if (p.endsWith('.html')) res.set('Cache-Control', 'no-cache'); } }));
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], setHeaders(res, p) { res.set('Cache-Control', /\.(html|css|js)$/.test(p) ? 'no-cache' : 'public, max-age=86400'); } }));
 app.use((req, res) => res.status(404).sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.listen(PORT, () => {

@@ -118,7 +118,12 @@
       var its = parts.slice(1), tail = [];
       var m = /^(.*?[a-zæøå&)])\s+([A-ZÆØÅ][a-zæøå].{10,})$/.exec(its[its.length - 1]);
       if (m) { its[its.length - 1] = m[1]; tail.push(m[2]); }
-      return { intro: [parts[0]].concat(tail), items: its.filter(function (s) { return s.length < 80; }) };
+      var keep = [], more = [];
+      its.forEach(function (x) {
+        if (/^pris\b/i.test(x)) return;                       // price is already shown above
+        if (x.length > 70 || /^(perfekt|passer|ideell|flott)\b/i.test(x)) more.push(x); else keep.push(x);
+      });
+      return { intro: [parts[0]].concat(tail, more), items: keep };
     }
     // comma list, optionally grouped "Kaldt: a, b. Varmt: c, d."
     var intro = [], items = [];
@@ -128,7 +133,7 @@
       var list = label ? label[2] : body;
       if ((list.match(/,/g) || []).length >= 2 && list.length < 400 && !/(pris|kr\b|perfekt|passer)/i.test(list)) {
         list.split(/,\s*|\s+og\s+/).map(function (x) { return x.trim(); }).filter(Boolean).forEach(function (x) { items.push(cap(x)); });
-      } else if (body) intro.push(sent);
+      } else if (body && !/^pris\b/i.test(body)) intro.push(sent);
     });
     return { intro: intro, items: items };
   }
@@ -166,7 +171,7 @@
   }
   function stepperHTML(p, q, extra) {
     var u = UNIT[p.unit] || UNIT.stk;
-    return '<div class="stepper ' + extra + '"><button type="button" data-step="-1" aria-label="Færre"' + (q <= minQty(p) ? ' disabled' : '') + '>' + icon('minus') + '</button>' +
+    return '<div class="stepper ' + extra + '"><button type="button" data-step="-1" aria-label="Færre"' + (q <= minQty(p) ? ' aria-disabled="true"' : '') + '>' + icon('minus') + '</button>' +
       '<input type="number" inputmode="numeric" min="' + minQty(p) + '" max="2000" value="' + q + '" aria-label="Antall ' + u.many + '" data-qty>' +
       (/stepper--lg|with-unit/.test(extra) ? '<span class="stepper__unit">' + u.short + '</span>' : '') +
       '<button type="button" data-step="1" aria-label="Flere">' + icon('plus') + '</button></div>';
@@ -301,22 +306,28 @@
       (d.items.length ? '<div><h3 class="title">Dette er med</h3><ul class="inc-list">' + d.items.map(function (s) { return '<li>' + icon('check') + '<span>' + esc(s) + '</span></li>'; }).join('') + '</ul></div>' : '') +
       '<p class="small muted">Allergier eller spesielle ønsker? Skriv det i forespørselen, så tilpasser vi.</p>' +
       (addon && basket.items[addon.handle] == null ? '<div class="upsell"><div class="grow"><div style="font-weight:500">Riskrem med rød saus</div><div class="small muted">' + nok(addon.price) + ' per person, kun sammen med julebuffet</div></div><button type="button" class="btn-outline-sm" data-dlg-addon>' + icon('plus') + ' Legg til</button></div>' : '') +
-      '<div class="dlg__ctl"><div class="field"><span class="lbl">Antall ' + u.many + '</span>' + stepperHTML(p, q, 'stepper--lg') + '</div>' +
+      '<div class="dlg__ctl"><div class="dlg__qty"><span class="lbl">Antall ' + u.many + '</span>' + stepperHTML(p, q, 'stepper--lg') + '</div>' +
       '<div style="text-align:right"><div class="small muted" data-dlg-calc>' + q + ' × ' + nok(p.price) + '</div><div class="price-lg" data-dlg-total>' + nok(q * p.price) + '</div></div></div>' +
       '<p class="card__note" data-note hidden></p>' +
       '<button type="button" class="btn btn--primary btn--block" data-dlg-add>' + (added ? 'Oppdater forespørselen' : 'Legg til i forespørselen') + '</button>' +
       '</div></div>';
     if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+    var sc = $('.dlg__grid', dlg); if (sc) sc.scrollTop = 0; dlg.scrollTop = 0;
     track('ViewContent', { content_ids: [handle], content_name: p.title, content_type: 'product', value: p.price, currency: 'NOK' });
   }
   function closeDetail() { var d = $('#detail'); if (d.close) d.close(); else d.removeAttribute('open'); }
 
   function stepperChange(root, handle, delta, direct) {
     var p = MENU.products[handle]; var input = $('[data-qty]', root);
-    var q = direct != null ? direct : (Number(input.value) || 0) + delta;
+    var before = Number(input.value) || 0;
+    var q = direct != null ? direct : before + delta;
+    var hitMin = q < minQty(p);
     q = Math.max(minQty(p), Math.min(2000, Math.floor(q) || minQty(p)));
     input.value = q;
-    var minus = $('[data-step="-1"]', root); if (minus) minus.disabled = q <= minQty(p);
+    var minus = $('[data-step="-1"]', root); if (minus) { if (q <= minQty(p)) minus.setAttribute('aria-disabled', 'true'); else minus.removeAttribute('aria-disabled'); }
+    var note = $('[data-note]', root);
+    if (note && hitMin && p.min) { note.textContent = 'Minimum ' + p.min + ' ' + (p.unit === 'person' ? 'personer' : 'stk.') + ' på denne menyen.'; note.hidden = false; }
+    else if (note && !hitMin && /^Minimum/.test(note.textContent)) note.hidden = true;
     return q;
   }
 
