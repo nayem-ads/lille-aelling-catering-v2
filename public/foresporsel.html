@@ -16,17 +16,25 @@
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 <header class="hdr">
   <div class="wrap hdr__in">
     <a class="hdr__logo" href="/" aria-label="Lille Ælling, til forsiden"><img src="https://lilleelling.no/cdn/shop/files/header_logo.png" alt="Lille Ælling" width="146" height="35"></a>
-    <span class="hdr__step">Steg 2 av 2: Dato og levering</span>
     <a class="link" href="/#menyer" style="display:inline-flex;align-items:center;gap:4px"><svg class="icon"><use href="#i-back"/></svg>Tilbake<span class="hide-sm">&nbsp;til menyene</span></a>
   </div>
 </header>
+<div class="progress-band"><div class="wrap"><ol class="progress" aria-label="Slik bestiller du">
+  <li class="is-done"><span class="progress__dot"><svg class="icon"><use href="#i-check"/></svg></span><span>Velg menyer</span></li>
+  <li class="is-current" aria-current="step"><span class="progress__dot">2</span><span>Dato og levering</span></li>
+  <li><span class="progress__dot">3</span><span>Bekreftelse</span></li>
+</ol></div></div>
 
-<details class="sumbar" id="sumbar">
-  <summary><span><span class="title" style="font-size:16px;font-weight:500">Din forespørsel</span><br><span class="small muted" id="sumbarLine"></span></span><span style="display:inline-flex;align-items:center;gap:4px" class="small"><span>Vis</span><svg class="icon chev"><use href="#i-down"/></svg></span></summary>
+<details class="sumbar" id="sumbar" open>
+  <summary><span><span class="title" style="font-size:16px;font-weight:500">Din forespørsel</span><br><span class="small muted" id="sumbarLine"></span></span><span style="display:inline-flex;align-items:center;gap:4px" class="small"><span class="sumbar__show">Vis</span><span class="sumbar__hide">Skjul</span><svg class="icon chev"><use href="#i-down"/></svg></span></summary>
   <div class="sumbar__body" id="sumbarBody"></div>
 </details>
 

@@ -168,7 +168,7 @@
     var u = UNIT[p.unit] || UNIT.stk;
     return '<div class="stepper ' + extra + '"><button type="button" data-step="-1" aria-label="Færre"' + (q <= minQty(p) ? ' disabled' : '') + '>' + icon('minus') + '</button>' +
       '<input type="number" inputmode="numeric" min="' + minQty(p) + '" max="2000" value="' + q + '" aria-label="Antall ' + u.many + '" data-qty>' +
-      (extra.indexOf('stepper--lg') > -1 ? '<span class="stepper__unit">' + u.short + '</span>' : '') +
+      (/stepper--lg|with-unit/.test(extra) ? '<span class="stepper__unit">' + u.short + '</span>' : '') +
       '<button type="button" data-step="1" aria-label="Flere">' + icon('plus') + '</button></div>';
   }
   function renderResults() {
@@ -186,6 +186,43 @@
     $('#resultsCount').textContent = count + (count === 1 ? ' meny' : ' menyer');
     $$('#cats .cat').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-cat') === current)); });
   }
+  function thumbHTML(p) {
+    return '<div class="sline__img">' + (p.image ? '<img src="' + esc(img(p.image, 160)) + '" alt="" loading="lazy">' : '<span>' + esc(p.title.charAt(0)) + '</span>') + '</div>';
+  }
+  function editLineHTML(l) {
+    var u = UNIT[l.p.unit] || UNIT.stk;
+    return '<div class="sline" data-handle="' + esc(l.p.handle) + '">' + thumbHTML(l.p) +
+      '<div class="sline__main"><div class="sline__top"><span class="sline__t">' + esc(l.p.title) + '</span>' +
+      '<button type="button" class="sline__rm" data-remove aria-label="Fjern ' + esc(l.p.title) + '" title="Fjern">' + icon('trash') + '</button></div>' +
+      '<div class="small muted">' + nok(l.p.price) + ' ' + u.per + (l.p.min ? ', min. ' + l.p.min : '') + '</div>' +
+      '<div class="sline__bottom">' + stepperHTML(l.p, l.qty, 'stepper--sm') + '<span class="sline__amt">' + nok(l.line) + '</span></div></div></div>';
+  }
+  function clearAllHTML(n) {
+    return '<div class="clear-all" data-clear-wrap><button type="button" class="clear-all__btn" data-clear>' + icon('trash') + ' Tøm forespørselen</button>' +
+      '<div class="clear-all__confirm" hidden><span class="small">Fjerne alle ' + n + ' valg?</span><button type="button" class="btn-outline-sm clear-all__yes" data-clear-yes>Ja, tøm</button><button type="button" class="link" data-clear-no>Avbryt</button></div></div>';
+  }
+  function clearBasket() { basket = { items: {} }; saveBasket(); }
+  /* shared handlers for editable lines (home panel + checkout). Returns true if handled. */
+  function handleLineClick(t, after) {
+    var wrap = t.closest('[data-clear-wrap]');
+    if (wrap) {
+      if (t.closest('[data-clear]')) { $('[data-clear]', wrap).hidden = true; $('.clear-all__confirm', wrap).hidden = false; $('[data-clear-yes]', wrap).focus(); return true; }
+      if (t.closest('[data-clear-no]')) { $('[data-clear]', wrap).hidden = false; $('.clear-all__confirm', wrap).hidden = true; $('[data-clear]', wrap).focus(); return true; }
+      if (t.closest('[data-clear-yes]')) { var hs = Object.keys(basket.items); clearBasket(); after(hs); return true; }
+    }
+    var line = t.closest('.sline'); if (!line) return false;
+    var h = line.getAttribute('data-handle');
+    if (t.closest('[data-remove]')) { removeItem(h); after([h, UPSELL.addon]); return true; }
+    var st = t.closest('[data-step]');
+    if (st) { var q = stepperChange(line, h, Number(st.getAttribute('data-step'))); basket.items[h] = q; saveBasket(); after([h]); return true; }
+    return false;
+  }
+  function handleLineChange(input, after) {
+    var line = input.closest('.sline'); if (!line) return false;
+    var h = line.getAttribute('data-handle'); var q = stepperChange(line, h, 0, Number(input.value));
+    basket.items[h] = q; saveBasket(); after([h]); return true;
+  }
+
   function renderPanel() {
     var lines = basketLines(MENU), total = basketTotal(lines), n = lines.length;
     var panel = $('#panel');
@@ -194,9 +231,7 @@
       if (!n) {
         h += '<p class="panel__empty">Ingen menyer valgt ennå. Trykk «Legg til» på menyene du vil ha med.</p>';
       } else {
-        h += lines.map(function (l) {
-          return '<div class="line" data-handle="' + esc(l.p.handle) + '"><div class="line__l"><div class="line__t">' + esc(l.p.title) + '</div><div class="small muted">' + l.qty + ' ' + unitWord(l.p.unit, l.qty) + ' × ' + nok(l.p.price) + '</div><button type="button" class="link" data-remove>Fjern</button></div><div class="line__amt">' + nok(l.line) + '</div></div>';
-        }).join('');
+        h += '<div class="slines">' + lines.map(editLineHTML).join('') + '</div>';
         h += upsellHTML(lines);
         h += '<hr class="divider"><div class="row"><span class="small muted">Levering</span><span class="small muted">Avklares med deg</span></div>';
         h += '<div class="row"><span style="font-weight:500">Estimert pris</span><span class="price-lg">' + nok(total) + '</span></div>';
@@ -204,6 +239,7 @@
       }
       h += '<a class="btn btn--primary btn--block" href="/foresporsel">Velg dato og levering</a>';
       h += '<p class="meta" style="text-align:center">Ingen betaling nå. Forespørselen er uforpliktende.</p>';
+      if (n) h += clearAllHTML(n);
       panel.innerHTML = h;
     }
     var c = $('#basketCount'); if (c) c.textContent = n;
@@ -318,8 +354,7 @@
           return;
         }
       }
-      var line = t.closest('#panel [data-remove]');
-      if (line) { var hh = line.closest('[data-handle]').getAttribute('data-handle'); removeItem(hh); refreshCard(hh); refreshCard(UPSELL.addon); renderPanel(); return; }
+      if (t.closest('#panel') && handleLineClick(t, function (hs) { renderPanel(); hs.forEach(refreshCard); })) return;
       var up = t.closest('[data-upsell]');
       if (up) { addItem(UPSELL.addon, Number(up.getAttribute('data-upsell'))); refreshCard(UPSELL.addon); renderPanel(); return; }
       // dialog
@@ -344,6 +379,7 @@
     });
     document.addEventListener('change', function (e) {
       var input = e.target.closest('[data-qty]'); if (!input || !MENU) return;
+      if (input.closest('#panel')) { handleLineChange(input, function (hs) { renderPanel(); hs.forEach(refreshCard); }); return; }
       var card = input.closest('.card'); var dlg = input.closest('#detail');
       if (card) { var h = card.getAttribute('data-handle'); var q = stepperChange(card, h, 0, Number(input.value)); setQty(h, q); }
       if (dlg) { var dh = $('.dlg__grid', dlg).getAttribute('data-handle'); updateDlgCalc(dlg, dh, stepperChange(dlg, dh, 0, Number(input.value))); }
@@ -378,7 +414,7 @@
 
   /* ---------- REQUEST (step 2) ---------- */
   var FIELDS = {
-    date: function (v) { if (!v) return 'Velg en dato.'; var d = new Date(v + 'T00:00:00'), t = new Date(); t.setHours(0, 0, 0, 0); return d < t ? 'Velg en dato fra i dag og fremover.' : ''; },
+    date: function (v) { if (!v) return 'Velg en dato.'; var d = new Date(v + 'T00:00:00'), t = new Date(); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() + 1); return d < t ? 'Velg en dato fra i morgen og fremover. Haster det, ring 915 86 115.' : ''; },
     time: function (v) { return v ? '' : 'Velg et klokkeslett.'; },
     address: function (v) { return fulfil() === 'henting' || v.trim().length >= 3 ? '' : 'Skriv inn leveringsadressen.'; },
     postcode: function (v) { return fulfil() === 'henting' || /^\d{4}$/.test(v.trim()) ? '' : 'Skriv inn et postnummer med 4 siffer.'; },
@@ -400,12 +436,14 @@
 
   function renderSummary() {
     var lines = basketLines(MENU), total = basketTotal(lines);
-    var body = lines.length ? lines.map(function (l) {
-      return '<div class="line"><div class="line__l"><div class="line__t">' + esc(l.p.title) + '</div><div class="small muted">' + l.qty + ' ' + unitWord(l.p.unit, l.qty) + ' × ' + nok(l.p.price) + '</div></div><div class="line__amt">' + nok(l.line) + '</div></div>';
-    }).join('') + '<hr class="divider"><div class="row"><span style="font-weight:500">Estimert pris</span><span class="price-lg">' + nok(total) + '</span></div><p class="meta">Inkludert mva. Levering avklares med deg.</p>'
-      : '<p class="small muted">Ingen menyer valgt.</p>';
-    var s = $('#summary'); if (s) s.innerHTML = '<div class="row"><h2 class="h3">Din forespørsel</h2><a class="link" href="/#menyer">Endre</a></div>' + body;
-    var sb = $('#sumbarBody'); if (sb) sb.innerHTML = body + '<a class="link" href="/#menyer">Endre menyene</a>';
+    var body = lines.length
+      ? '<div class="slines">' + lines.map(editLineHTML).join('') + '</div>' +
+        '<div class="row"><span style="font-weight:500">Estimert pris</span><span class="price-lg">' + nok(total) + '</span></div>' +
+        '<p class="meta">Inkludert mva. Levering avklares med deg.</p>' +
+        '<div class="row row--links"><a class="link" href="/#menyer">' + icon('plus') + ' Legg til flere menyer</a></div>' + clearAllHTML(lines.length)
+      : '<div class="empty-basket"><p class="small muted">Ingen menyer valgt ennå.</p><a class="btn btn--secondary" href="/#menyer">Velg menyer</a></div>';
+    var s = $('#summary'); if (s) s.innerHTML = '<h2 class="h3">Din forespørsel</h2>' + body;
+    var sb = $('#sumbarBody'); if (sb) sb.innerHTML = body;
     var sl = $('#sumbarLine'); if (sl) sl.textContent = lines.length ? lines.length + ' valg, estimert ' + nok(total) : 'Ingen menyer valgt';
     $('#emptyNote').hidden = !!lines.length;
     $('#msgOpt').hidden = !lines.length;
@@ -415,7 +453,10 @@
   function initRequest() {
     var form = $('#reqForm');
     var dateInput = $('#date'); var tmr = new Date(); tmr.setDate(tmr.getDate() + 1);
-    dateInput.min = new Date(Date.now() - tmr.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    dateInput.min = tmr.getFullYear() + '-' + String(tmr.getMonth() + 1).padStart(2, '0') + '-' + String(tmr.getDate()).padStart(2, '0');
+    var afterEdit = function () { renderSummary(); };
+    document.addEventListener('click', function (e) { if (MENU && (e.target.closest('#summary') || e.target.closest('#sumbarBody'))) handleLineClick(e.target, afterEdit); });
+    document.addEventListener('change', function (e) { var i = e.target.closest('.sline [data-qty]'); if (i && MENU) handleLineChange(i, afterEdit); });
     var draft = ss('lae_form') || {};
     Object.keys(draft).forEach(function (k) { var el = form.elements[k]; if (!el || k === 'website') return; if (el.length && el[0] && el[0].type === 'radio') { $$('input[name="' + k + '"]').forEach(function (r) { r.checked = r.value === draft[k]; }); } else el.value = draft[k]; });
     function syncFulfil() { var h = fulfil() === 'henting'; $('#addrRow').hidden = h; $('#addrHelp').textContent = h ? 'Hent maten hos oss på Losjeplassen 2, 3015 Drammen.' : 'Vi leverer innen 40 km fra Drammen.'; if (h) { showErr('address', ''); showErr('postcode', ''); } }
